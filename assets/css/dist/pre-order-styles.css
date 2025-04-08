@@ -1,0 +1,33 @@
+:root {
+    --rs-blue: #0073aa;
+}
+  
+.pre-order-blue {
+    color: var(--rs-blue); 
+}
+
+/* class name created by WC */
+.variation-spanclasspre-order-shipment-titleShipmentdatesspan {
+    color: var(--rs-blue);
+}
+
+.pre-order-shipment-date {
+    display: block;
+    margin-bottom: 0;
+}
+
+.pre-order-container-name {
+    display: none;
+}
+
+.wc-item-meta .pre-order-shipment-date {
+    display: flex;
+    flex-direction: column;
+    color: var(--rs-blue); 
+}
+
+p.omom-shipment-date,
+.wc-item-meta li p.omom-shipment-date {
+    display: block;
+    margin-bottom: 0;
+}

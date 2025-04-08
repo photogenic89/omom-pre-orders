@@ -1,0 +1,31 @@
+{
+	"include": [
+		"assets/js/src/*.ts", 
+		"assets/js/src/*.tsx"
+	],
+	"compilerOptions": {
+		"baseUrl": "./",
+		"paths": {
+			"@/*": ["assets/js/src/*"],
+			"react": [ "./node_modules/@types/react" ]
+		},
+		"allowSyntheticDefaultImports" : true,
+		"esModuleInterop" : true,
+		"sourceMap": false,
+		"outDir": "assets/js/dist",
+		"noImplicitAny": true,
+		"module": "es6",
+		"target": "es5",
+    	"jsx": "react-jsx",
+		"allowJs": true,
+		"checkJs": false,
+		"moduleResolution": "node",
+		"removeComments": true,
+		"skipLibCheck": true,
+		"downlevelIteration": true
+	},
+	"exclude": [
+		"node_modules",
+		"./vendor"
+	],
+}
