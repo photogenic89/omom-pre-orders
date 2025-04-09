@@ -32,11 +32,13 @@ class Hooks extends Singleton
         // show pre-order list on cart page
         add_filter( 'woocommerce_get_item_data', [ $this, 'addPreOrderDatesToItemData' ], 10, 2 );
 
-        // Validate cart quantity updates for all user roles
+        // validate pre-order quantity when changing qty on cart page - last validation in cart
         add_filter( 'woocommerce_update_cart_validation', [ $this, 'updateCartValidation' ], 10, 4 );
 
-        // validate pre-order quantity when changing qty on cart page - last validation in cart
+        // validation & update list
+        add_action( 'woocommerce_store_api_cart_errors',                  [ $this, 'checkPreOrderStoreApiCartItems' ], 10, 2 );
         add_action( 'woocommerce_check_cart_items',                       [ $this, 'checkPreOrderCartItems' ], 10, 1 );
+        // add_action( 'woocommerce_after_checkout_validation',              [ $this, 'checkCartItemsOnOrderCreation' ], 10, 2 ); // on order creation
         add_filter( 'woocommerce_cart_item_required_stock_is_not_enough', [ $this, 'cartRequiredStockIsNotEnough' ], 10, 3 );
     }
 
@@ -148,26 +150,51 @@ class Hooks extends Singleton
     }
 
     /**
+     * Check cart items when cart is loaded
+     * 
+     * @todo check if actually works
+     * 
+	 * @param \WP_Error $errors  WP_Error object.
+	 * @param \WC_Cart  $cart    Cart object.
+     */
+    public function checkPreOrderStoreApiCartItems( $cart_errors, \WC_Cart $cart ): void
+    {
+        remove_action( 
+            'woocommerce_check_cart_items',                       
+            [$this, 'checkPreOrderCartItems'], 
+            10
+        );
+
+        // here we will need to check items like we did in checkPreOrderCartItems
+        $this->checkCart( $cart_errors );
+    }
+
+    /**
      * Validate cart items in cart and on checkout
      * This is the last time items get validated before creating an order!
      * This is also called in cart 
      * 
      * @todo if list different from before, inform customer
+     * @deprecated
      */
     public function checkPreOrderCartItems(): void 
     {       
+        // need to update restock_list, because pre-order-/stock levels can have changed in the meantime
+        $has_changed = (new Lists( WC()->cart ))->update();
+ 
         // only on checkout
-        if (! empty( $_REQUEST['woocommerce-process-checkout-nonce'] )) {
-
-            // need to update restock_list, because pre-order-/stock levels can have changed in the meantime
-            $list = new Lists( WC()->cart );
-            $has_changed = $list->update();
-
-            // does not work yet
-            if ($has_changed) 
-                add_action( 'woocommerce_before_thankyou', [$this, 'maybeShowPOUpdateInfo'] );
+        if (! empty( $_REQUEST['woocommerce-process-checkout-nonce'] ) && $has_changed) {
+            add_action( 'woocommerce_before_thankyou', [$this, 'maybeShowPOUpdateInfo'] );
         }
 
+        $this->checkCart();
+    }
+
+    /**
+     * 
+     */
+    public function checkCart( $cart_errors = null ): void
+    {
         $product_qty_in_cart      = WC()->cart->get_cart_item_quantities();
         $current_session_order_id = absint( WC()->session->order_awaiting_payment ?? 0 );
 
@@ -183,16 +210,25 @@ class Hooks extends Singleton
             $stock   = $handler->getTotalStock();
 
             if ($stock <= 0) {
-                wc_add_notice( 
-                    sprintf( 
-                        __( 
-                            'Sorry, "%s" is not in stock. Please edit your cart and try again. We apologize for any inconvenience caused.', 
-                            OMOM_PREORDERS()->text_domain 
-                        ), 
-                        $product->get_name() 
+
+                $notice = sprintf( 
+                    __( 
+                        'Sorry, "%s" is not in stock. Please edit your cart and try again. We apologize for any inconvenience caused.', 
+                        OMOM_PREORDERS()->text_domain 
                     ), 
-                    'error' 
+                    $product->get_name() 
                 );
+
+                null !== $cart_errors ? 
+                $cart_errors->add(
+                    'woocommerce_rest_product_out_of_stock',
+                    $notice
+                )
+                : wc_add_notice( 
+                    $notice,
+                    'error'
+                );
+
             } 
 
             // Check stock based on all items in the cart and consider any held stock within pending orders.
@@ -201,15 +237,22 @@ class Hooks extends Singleton
 
             if ($stock >= ($held_stock + $required_stock)) continue;
 
-            wc_add_notice( 
-                sprintf( 
-                    __( 
-                        'Sorry, we do not have enough "%1$s" in stock to fulfill your order (%2$s available). We apologize for any inconvenience caused.', 
-                        OMOM_PREORDERS()->text_domain 
-                    ), 
-                    $product->get_name(), 
-                    wc_format_stock_quantity_for_display( $stock - $held_stock, $product ) 
+            $notice = sprintf( 
+                __( 
+                    'Sorry, we do not have enough "%1$s" in stock to fulfill your order (%2$s available). We apologize for any inconvenience caused.', 
+                    OMOM_PREORDERS()->text_domain 
                 ), 
+                $product->get_name(), 
+                wc_format_stock_quantity_for_display( $stock - $held_stock, $product ) 
+            );
+
+            null !== $cart_errors ?
+            $cart_errors->add(
+                'woocommerce_rest_product_partially_out_of_stock',
+                $notice
+            )
+            : wc_add_notice(
+                $notice,
                 'error' 
             );
         }

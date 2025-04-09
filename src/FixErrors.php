@@ -126,6 +126,8 @@ class FixErrors
     /**
      * Update all active products with the correct new stock &
      * remove all meta of all inactive products
+     * 
+     * @todo change email
      */
     private function checkProducts( array $active_products ): void
     {

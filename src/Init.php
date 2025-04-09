@@ -1,11 +1,7 @@
 <?php
 /**
  * Init
- * Register custom post type Restock and hidden Taxonomy for pre-ordered products
- *
- * @author   Studio Koepfchen <info@studiokoepfchen.com>
- * @package  Omom Pre-Orders
- * @since    0.0.1
+ * Register custom post type and hidden Taxonomy
  */
 namespace Omom\PreOrders;
 
@@ -19,7 +15,11 @@ class Init
      */
     public static function init(): void
     { 
-        add_action( 'init', [__CLASS__, 'register'], 999 );
+        add_action( 
+            'init', 
+            [__CLASS__, 'register'], 
+            999 
+        );
     }
 
     /**
@@ -27,18 +27,18 @@ class Init
      */
     public static function register(): void
     {
-        self::registerRestockPostType();
-        self::registerRestockTaxonomy();
-        self::registerPostStatus();
+        self::registerPostType();
+        self::registerPreOrderTaxonomy();
+        // self::registerPostStatus();
         StoreApi::registerEndpoint();
     }
     
     /**
      * Register the Pre-Orders CPT
      * 
-     * @since 0.0.1
+     * @todo rename to omom_shipment - this is what they are used as, so shipment
      */
-    public static function registerRestockPostType(): void 
+    public static function registerPostType(): void 
     {
         $text_domain = OMOM_PREORDERS()->text_domain;
         $labels = [
@@ -89,16 +89,16 @@ class Init
     /**
      * Register custom taxonomy Restocked Products
      * 
-     * @since 0.0.1
+     * @todo rename to omom_shipping_products
      */
-    public static function registerRestockTaxonomy(): void
+    public static function registerPreOrderTaxonomy(): void
     {
         // Taxonomy arguments
         $args = [
             'public'            => true,
-            'show_ui'           => true,
-            'show_in_nav_menus' => true,
-            'show_admin_column' => true,
+            'show_ui'           => false,
+            'show_in_nav_menus' => false,
+            'show_admin_column' => false,
             'meta_box_cb'       => false,
             'query_var'         => 'restocked_products',
 
@@ -136,6 +136,8 @@ class Init
 
     /**
      * Register post status internal
+     * 
+     * @todo figure out if necessary
      */
     public static function registerPostStatus(): void
     {
