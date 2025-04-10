@@ -113,7 +113,7 @@ export default function ProductSearch(props: Props)
                 onChange={handleInputChange}
                 type="text" 
                 placeholder="Search for a product here"
-                value={"" !== title ? title : search}
+                value={"" !== title ? title.replace(/<\/?[^>]+(>|$)/g, "") : search}
             />
             <span
                 className="omom-absolute omom-top-1 omom-right-2 hover:omom-cursor-pointer"

@@ -45,9 +45,9 @@ class FixErrors
             // or if it still has products with a stock
             foreach ($shipment->getProducts() as $product) {
 
-                $id  = $product['ID'];
-                $qty = $product['Original']; // how much is expected to come
-                $av  = $product['Restock']; // how much of it is still available
+                $id  = (int) $product['ID'];
+                $qty = (int) $product['Original']; // how much is expected to come
+                $av  = (int) $product['Restock']; // how much of it is still available
 
                 // check if term is missing in shipment
                 $key = array_search( $id, $terms );
