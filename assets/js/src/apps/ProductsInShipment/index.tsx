@@ -89,7 +89,7 @@ export default function ProductsInShipment()
                                 name="rs_amount_products" 
                                 value={products.length}
                             />
-                            <Loader loading={isLoaded} />
+                            <Loader loading={! isLoaded} />
 
                             {getProducts()}
                             <Product

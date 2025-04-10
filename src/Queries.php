@@ -72,8 +72,8 @@ class Queries
 
             $all_shipments[] = [
                 "id"        => $id,
-                "original"  => (int) $product['Original'],
-                "available" => (int) $product['Restock'],
+                "original"  => (int) ($product['Original'] ?? 0),
+                "available" => (int) ($product['Restock'] ?? 0),
                 "arrival"   => $handler->getArrival()
             ];
         }

@@ -6,18 +6,6 @@
   position: relative;
 }
 
-.omom-right-2 {
-  right: 0.5rem;
-}
-
-.omom-top-2 {
-  top: 0.5rem;
-}
-
-.omom-top-1 {
-  top: 0.25rem;
-}
-
 .omom-bottom-0 {
   bottom: 0px;
 }
@@ -30,8 +18,16 @@
   right: 0px;
 }
 
+.omom-right-2 {
+  right: 0.5rem;
+}
+
 .omom-top-0 {
   top: 0px;
+}
+
+.omom-top-1 {
+  top: 0.25rem;
 }
 
 .omom-z-10 {
@@ -79,8 +75,26 @@
   display: grid;
 }
 
+.omom-h-8 {
+  height: 2rem;
+}
+
+.omom-w-8 {
+  width: 2rem;
+}
+
 .omom-w-full {
   width: 100%;
+}
+
+@keyframes omom-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.omom-animate-spin {
+  animation: omom-spin 1s linear infinite;
 }
 
 .omom-grid-cols-2 {
@@ -89,6 +103,14 @@
 
 .omom-flex-col {
   flex-direction: column;
+}
+
+.omom-flex-wrap {
+  flex-wrap: wrap;
+}
+
+.omom-content-center {
+  align-content: center;
 }
 
 .omom-justify-center {
@@ -129,9 +151,18 @@
   border-color: rgb(221 221 221 / var(--tw-border-opacity, 1));
 }
 
+.omom-bg-blue-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(59 130 246 / var(--tw-bg-opacity, 1));
+}
+
 .omom-bg-white {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+}
+
+.omom-fill-blue-700 {
+  fill: #1d4ed8;
 }
 
 .omom-p-2 {
@@ -146,8 +177,13 @@
   padding-right: 2rem;
 }
 
-.omom-opacity-50 {
-  opacity: 0.5;
+.omom-text-white {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+
+.omom-opacity-75 {
+  opacity: 0.75;
 }
 
 .page-header,
