@@ -23,10 +23,6 @@ class Settings
 				"id" 		=> "omom_pre_order_only_dates",
 				"isChecked" => "true" === get_option( 'omom_pre_order_only_dates' ),
 				"label"     => "Show only pre-order dates and don't use for stock validation. (saves on click)"
-			], [
-				"type"   => "button",
-				"method" => "fixErrors",
-				"label"  => "Fix errors"
 			]
 		];
 
@@ -40,6 +36,12 @@ class Settings
 				"label"     => "Enable logging"
 			];
 		}
+
+		$settings[] = [
+			"type"   => "button",
+			"method" => "fixErrors",
+			"label"  => "Fix errors"
+		];
 
 		wp_send_json_success([
 			'settings' => $settings

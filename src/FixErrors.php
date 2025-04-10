@@ -26,6 +26,8 @@ class FixErrors
 
     /**
      * Loop through all not yet released shipment
+     * 
+     * @return array - all products in active shipments
      */
     private function checkActiveShipments(): array
     {
@@ -35,17 +37,16 @@ class FixErrors
 
         foreach ($shipments as $shipment_id => $shipment) {
 
-            $handler  = new ShipmentHandler( $shipment_id );
             $terms    = Terms::getProductsInShipment( $shipment_id );
-            $released = ! $handler->isActive();
+            $released = ! $shipment->isActive();
             
             // check the shipment, if it is active
             // or if it still has products with a stock
-            foreach ($shipment['products'] as $product) {
+            foreach ($shipment->getProducts() as $product) {
 
                 $id  = $product['ID'];
-                $qty = $product['Original'];
-                $av  = $product['Restock'];
+                $qty = $product['Original']; // how much is expected to come
+                $av  = $product['Restock']; // how much of it is still available
 
                 // check if term is missing in shipment
                 $key = array_search( $id, $terms );
@@ -78,7 +79,7 @@ class FixErrors
             foreach ($terms as $term)
                 Terms::remove( $shipment_id, $term );
 
-            $this->maybeSetStatus( $handler, $released );
+            $this->maybeSetStatus( $shipment, $released );
         }
 
         // check if Terms are in any other shipment posts
@@ -128,6 +129,8 @@ class FixErrors
      * remove all meta of all inactive products
      * 
      * @todo change email
+     * 
+     * @param array $active_products
      */
     private function checkProducts( array $active_products ): void
     {
@@ -143,12 +146,26 @@ class FixErrors
             // remove what is already purchased, if stock has been taken
             $po_stock = $stock < 0 ? $original + $stock : $original;
             
+            $recipient = get_option( 'woocommerce_stock_email_recipient' ); // should this be somewhere else or better documented?
+
             // if it does not match available stock in shipments, take the calculated value there
-            if ($available !== $po_stock) {
+            if ($available !== $po_stock && false !== $recipient) {
+
+                $product = wc_get_product( $product_id );
+                $sku = $product ? $product->get_sku() : "";
+
                 wp_mail( 
-                    "kin@omniumcargo.com",
-                    "Pre-order stock mismatch",
-                    "Product ID " . $product_id . " has a mismach. Available in shipments is " . $available . " and calculated pre-order stock is " . $po_stock 
+                    $recipient,
+                    "Found pre-order stock mismatch when checking for errors",
+                    "Product: " . $product->get_name() .
+                    "<br>ID: " . $product_id .  
+                    "<br>SKU: " . $sku .
+                    "<br>has a mismatch." .
+                    "<br><br>In stock: " . $stock . 
+                    "<br>Available pre-order stock: " . $available . 
+                    "<br>Total pre-order stock in all active shipments: " . $original .
+                    "<br><br>To fix either adjust stock in product or pre-order stock in shipments.",
+                    ['Content-Type: text/html; charset=UTF-8'] 
                 );
             }
 
@@ -158,6 +175,7 @@ class FixErrors
                 continue;
             }
 
+            // blanket update
             $handler->updatePreOrderStock( $po_stock );
             $handler->updateNextShipmentID();
         }

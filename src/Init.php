@@ -29,8 +29,12 @@ class Init
     {
         self::registerPostType();
         self::registerPreOrderTaxonomy();
-        // self::registerPostStatus();
         StoreApi::registerEndpoint();
+        
+        add_shortcode( 
+            'omom-pre-orders', 
+            [Shortcode::getInstance(), 'getCallback'] 
+        );
     }
     
     /**
@@ -133,21 +137,4 @@ class Init
 
         register_taxonomy( 'restocked_products', 'restock', $args );
     }
-
-    /**
-     * Register post status internal
-     * 
-     * @todo figure out if necessary
-     */
-    public static function registerPostStatus(): void
-    {
-        register_post_status( 'internal', [
-            'label'                     => _x( 'Internal', 'post' ),
-            'public'                    => true,
-            'exclude_from_search'       => false,
-            'show_in_admin_all_list'    => true,
-            'show_in_admin_status_list' => true,
-            'label_count'               => _n_noop( 'Internal <span class="count">(%s)</span>', 'Internal <span class="count">(%s)</span>' ),
-        ]);
-    }  
 }

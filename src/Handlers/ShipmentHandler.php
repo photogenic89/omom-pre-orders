@@ -36,7 +36,8 @@ class ShipmentHandler
             "Y-m-d\TH:i", 
             "Y m d H i", 
             "jS \of F Y - H:i",
-            "jS \of F Y"
+            "jS \of F Y",
+            "F j Y"
         ];
 
         return isset($formats[$format]) ? (new \DateTime( "@" . $arrival, wp_timezone() ))->format( $formats[$format] ) : (int) $arrival; 

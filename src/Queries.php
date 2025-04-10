@@ -87,10 +87,11 @@ class Queries
      * 
      * @param int   $product_id - if want to filter for a certain product
      * @param bool  $ids_only - return only ids
+     * @param bool  $shortcode_filter - if filtered in shipment
      * 
      * @return array
      */
-    public static function getActiveShipments( int $product_id = 0, bool $ids_only = false ): array 
+    public static function getActiveShipments( int $product_id = 0, bool $ids_only = false, bool $filter = false ): array 
     {   
         $args = [
             'post_type'      => 'restock',
@@ -126,37 +127,43 @@ class Queries
             ],
         ];
 
+        if ($filter) {
+            $args['meta_query']['relation'] = 'AND';
+            $args['meta_query'][] = [
+                'key'   => 'rs_show_in_future_stock',
+                'value' => 'on'
+            ];
+        }
+
+        if ($ids_only) $args['fields'] = 'ids';
+
         $shipments = get_posts( $args );
+
+        // when we only go by shipment ids
+        if ($ids_only) return $shipments;
 
         $active_shipments = [];
 
         foreach ($shipments as $shipment) {
 
-            $id = (int) $shipment->ID;
-
-            // when we only go by shipment ids
-            if ($ids_only) {
-                $active_shipments[] = $id;
-                continue;
-            }
-
+            $id      = (int) $shipment->ID;
             $handler = new Handlers\ShipmentHandler( $id );
             $arrival = $handler->getArrival();
 
             // when we look for all products
             if (! $product_id) {
-                $active_shipments[$id] = [
-                    'arrival'  => $arrival,
-                    'products' => $handler->getProducts() 
-                ];
-
+                $active_shipments[$id] = $handler;
                 continue;
             }
 
             // when we look for one product
             $product = $handler->getProduct( $product_id );
+            
             if ([] == $product) continue;
-            $active_shipments[$arrival] = [$id => $product['quantity']];
+            
+            $active_shipments[$arrival] = [
+                $id => $product['quantity']
+            ];
         }
 
         return $active_shipments;
