@@ -2,6 +2,7 @@ import { useEffect, useState } from "@wordpress/element";
 import { Product as ProductType, Products } from "./types";
 import Product from "./components/Product";
 import { ajax } from "../../utils/_fetch";
+import Loader from "../../utils/Loader";
 
 export default function ProductsInShipment()
 {
@@ -81,13 +82,14 @@ export default function ProductsInShipment()
                             </tr>
                         </thead>
 
-                        <tbody data-row="" className="product-table">
+                        <tbody data-row="" className="product-table omom-relative">
                             <input 
                                 type="hidden" 
                                 id="product_counter" 
                                 name="rs_amount_products" 
                                 value={products.length}
                             />
+                            <Loader loading={isLoaded} />
 
                             {getProducts()}
                             <Product

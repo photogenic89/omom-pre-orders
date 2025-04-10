@@ -139,13 +139,9 @@ class FixErrors
 
             $original  = $stocks['qty'];
             $available = $stocks['av'];
-
-            $handler = new ProductHandler( $product_id );
-            $stock   = $handler->getStock();
-
-            // remove what is already purchased, if stock has been taken
-            $po_stock = $stock < 0 ? $original + $stock : $original;
-            
+            $handler   = new ProductHandler( $product_id );
+            $stock     = $handler->getStock();
+            $po_stock  = $stock < 0 ? $original + $stock : $available; // remove what is already purchased, if stock has been taken
             $recipient = get_option( 'woocommerce_stock_email_recipient' ); // should this be somewhere else or better documented?
 
             // if it does not match available stock in shipments, take the calculated value there
