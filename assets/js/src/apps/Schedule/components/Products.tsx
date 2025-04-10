@@ -26,15 +26,20 @@ export default function Products()
 
     return (
         <div className="omom-p-4 omom-relative">
-            <Loader loading={loading}/>
-            <Search
-                classes="omom-mb-4"
-                products={products} 
-                onFoundIndex={(index: number) => setActiveIndex(index)}
-            />
-            <div className="omom-grid omom-grid-cols-2 omom-gap-4 omom-mr-4">
-                {getProducts()}
-            </div>
+            {loading ? (
+                <Loader loading={loading}/>
+            ) : (
+                <>
+                    <Search
+                        classes="omom-mb-4"
+                        products={products} 
+                        onFoundIndex={(index: number) => setActiveIndex(index)}
+                    />
+                    <div className="omom-grid omom-grid-cols-2 omom-gap-4 omom-mr-4">
+                        {getProducts()}
+                    </div>
+                </>
+            )}
         </div>
     )
 }

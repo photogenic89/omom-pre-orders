@@ -204,6 +204,7 @@ class Queries
 
     /**
      * Get the next closest shipment by id
+     * Only takes what has an arrival date in the future
      * 
      * @param  int  $current_post_id
      * 

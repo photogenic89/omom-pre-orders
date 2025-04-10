@@ -1,3 +1,4 @@
+import parse from 'html-react-parser';
 import { Product } from "../types";
 import Shipments from "./Shipments";
 import Errors from "./Errors";
@@ -13,7 +14,7 @@ export default function Product({product}: props)
         <div className="omom-flex omom-flex-col omom-gap-2 omom-bg-white omom-border-2 omom-border-[#bbb] omom-border-solid omom-rounded-sm omom-p-4 omom-mx-auto omom-mt-0 omom-mb-6">
 
             <h4 className="product-title">
-                <span>{product.name}</span>
+                <span>{parse(product.name)}</span>
                 <span><strong>#{product.id}</strong></span>
             </h4>
 

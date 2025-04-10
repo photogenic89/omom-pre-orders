@@ -37,6 +37,7 @@ class FixErrors
 
         foreach ($shipments as $shipment_id => $shipment) {
 
+            $to_add = $to_remove = [];
             $terms    = Terms::getProductsInShipment( $shipment_id );
             $released = ! $shipment->isActive();
             
@@ -52,17 +53,14 @@ class FixErrors
                 $key = array_search( $id, $terms );
 
                 // add if yes, remove from array if no
-                if (false === $key) {
-                    if (0 !== $qty) Terms::add( $shipment_id, $id );
-                } else {
-                    unset( $terms[$key] );
-                }
+                if (false === $key && 0 !== $qty) $to_add[] = $id;
+                if (false !== $key) $to_remove[] = $key;
 
                 // remove from all
                 unset( $term_objects[$id][$shipment_id] );
 
-                // release - when all items are at 0
-                if ($qty && $released) $released = false;
+                // release - when all items are not available anymore
+                if ($av && $released) $released = false;
 
                 // collect po_stock
                 if (isset( $active_products[$id] )) {
@@ -74,6 +72,16 @@ class FixErrors
                 $active_products[$id]['qty'] = $qty;
                 $active_products[$id]['av'] = $av;
             }
+
+            // if need to add
+            if ([] !== $to_add && ! $released) 
+                foreach ($to_add as $to_add_id)
+                    Terms::add( $shipment_id, $to_add_id );
+
+            // if need to remove
+            if ([] !== $to_remove && ! $released) 
+                foreach ($to_remove as $remove_key)
+                    unset( $terms[$remove_key] );
 
             // remove leftover terms
             foreach ($terms as $term)
@@ -145,7 +153,7 @@ class FixErrors
             $recipient = get_option( 'woocommerce_stock_email_recipient' ); // should this be somewhere else or better documented?
 
             // if it does not match available stock in shipments, take the calculated value there
-            if ($available !== $po_stock && false !== $recipient) {
+            if ($po_stock > 0 && $available !== $po_stock && false !== $recipient) {
 
                 $product = wc_get_product( $product_id );
                 $sku = $product ? $product->get_sku() : "";

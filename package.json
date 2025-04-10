@@ -36,6 +36,7 @@
         "@tailwindcss/postcss": "^4.0.14",
         "@woocommerce/components": "^8.2.0",
         "@wordpress/components": "^29.5.0",
-        "@wordpress/element": "^6.16.0"
+        "@wordpress/element": "^6.16.0",
+        "html-react-parser": "^5.2.3"
     }
 }

@@ -89,24 +89,27 @@ export default function ProductsInShipment()
                                 name="rs_amount_products" 
                                 value={products.length}
                             />
-                            <Loader loading={! isLoaded} />
-
                             {getProducts()}
-                            <Product
-                                index={products.length + 1}
-                                product={{
-                                    id: "",
-                                    OriginalQty: 0,
-                                    AvailableQty: 0,
-                                    onFutureStockPage: false,
-                                    name: "",
-                                    state: "new"
-                                }}
-                                allProducts={products}
-                                onAddProduct={addProduct}
-                                onChangeCurrent={changeProduct}
-                                onRemoveCurrent={(i) => removeCurrentProduct(i)}
-                            />                            
+
+                            {! isLoaded ? (
+                                <Loader loading={! isLoaded} />
+                            ) : (
+                                <Product
+                                    index={products.length + 1}
+                                    product={{
+                                        id: "",
+                                        OriginalQty: 0,
+                                        AvailableQty: 0,
+                                        onFutureStockPage: false,
+                                        name: "",
+                                        state: "new"
+                                    }}
+                                    allProducts={products}
+                                    onAddProduct={addProduct}
+                                    onChangeCurrent={changeProduct}
+                                    onRemoveCurrent={(i) => removeCurrentProduct(i)}
+                                /> 
+                            )}               
                         </tbody>
 
                     </table>
