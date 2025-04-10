@@ -204,7 +204,9 @@ class Queries
 
     /**
      * Get the next closest shipment by id
-     * Only takes what has an arrival date in the future
+     * 
+     * shipment arrival date can be passed but 
+     * should contain an available quantity
      * 
      * @param  int  $current_post_id
      * 
@@ -220,14 +222,6 @@ class Queries
             'post_status'    => 'publish',
             'posts_per_page' => 10,
             'fields'         => 'ids',
-            'meta_query'     => [
-                [
-                    'key'      => 'rs_arrival',
-                    'value'    => strtotime( date( "Y-m-d H:i" ) ),
-                    'compare'  => '>',
-                    'type'     => 'numeric'
-                ]    
-            ],
             'tax_query'      => [
                 [
                     'taxonomy' => 'restocked_products',

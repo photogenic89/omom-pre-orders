@@ -22,7 +22,9 @@ export default function Shipments({shipments}: props)
                     </tr>
                     {shipment.arrival > Date.now() && (
                         <tr>
-                            &#8627; shipment ready to release
+                            <td>
+                                &#8627; shipment ready to release
+                            </td>
                         </tr>
                     )}
                 </>

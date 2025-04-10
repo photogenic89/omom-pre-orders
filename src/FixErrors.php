@@ -180,8 +180,8 @@ class FixErrors
             }
 
             // blanket update
-            $handler->updatePreOrderStock( $po_stock );
-            $handler->updateNextShipmentID();
+            $next = $handler->updateNextShipmentID();
+            if (0 !== $next) $handler->updatePreOrderStock( $po_stock );
         }
 
         $all_po_products      = Queries::getAllProductIdsWithPOStock();

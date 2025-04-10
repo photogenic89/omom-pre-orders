@@ -197,13 +197,17 @@ class ProductHandler
      * Update the ID of the next closes shipment in line
      * 
      * @param int $new_id - if 0, let the system find the next shipment id
+     * 
+     * @return int the new id or 0 if none found
      */
-    public function updateNextShipmentID( int $new_id = 0 ): void
+    public function updateNextShipmentID( int $new_id = 0 ): int
     {
         $product_id = $this->product_id;
         $new_id     = 0 === $new_id ? Queries::getClosestShipmentId( $product_id ) : $new_id;
 
         0 !== $new_id ? update_post_meta( $product_id, '_omom_closest_shipment', $new_id ) : $this->deleteMeta();
+
+        return $new_id;
     }
 
     /**
