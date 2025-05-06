@@ -40,23 +40,28 @@ class Settings extends Page
 	{
 		$dir_url = OMOM_PREORDERS()->pluginUrl();
 		$asset   = require_once(__DIR__ . '/../../../assets/js/dist/omom-settings.asset.php');
+		$script  = 'preorder_settings_scripts';
 
 		wp_enqueue_style( 
 			'preorder_admin_styles', 
-			OMOM_PREORDERS()->pluginUrl() . '/assets/css/dist/omom-admin.css', 
+			$dir_url . '/assets/css/dist/omom-admin.css', 
 			[], 
 			self::$script_version 
 		);
 
-		wp_enqueue_script( 
-			'preorder_settings_scripts', 
+		wp_register_script( 
+			$script, 
 			$dir_url . '/assets/js/dist/omom-settings.js', 
             $asset['dependencies'] ?? [], 
             $asset['version'] ?? self::$script_version, 
 			true 
 		);
 
-		self::loadAjaxObject( 'preorder_settings_scripts' );
+		// Force script to load in footer
+		wp_scripts()->add_data( $script, 'group', 1 );
+		wp_enqueue_script( $script );
+
+		self::loadAjaxObject( $script );
 	}
 
 	/**
