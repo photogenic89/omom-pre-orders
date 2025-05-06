@@ -27,7 +27,7 @@ class Settings
 		];
 
 		// Check if WooCommerce's logging feature is enabled.
-		if ( LoggingUtil::logging_is_enabled() ) {
+		if (class_exists( '\Automattic\WooCommerce\Utilities\LoggingUtil' ) && LoggingUtil::logging_is_enabled()) {
 			// Add the logging option to the form fields.
 			$settings[] = [
 				"type"      => "checkbox",

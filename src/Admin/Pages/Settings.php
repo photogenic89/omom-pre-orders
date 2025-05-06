@@ -49,17 +49,13 @@ class Settings extends Page
 			self::$script_version 
 		);
 
-		wp_register_script( 
+		wp_enqueue_script( 
 			$script, 
 			$dir_url . '/assets/js/dist/omom-settings.js', 
             $asset['dependencies'] ?? [], 
             $asset['version'] ?? self::$script_version, 
 			true 
 		);
-
-		// Force script to load in footer
-		wp_scripts()->add_data( $script, 'group', 1 );
-		wp_enqueue_script( $script );
 
 		self::loadAjaxObject( $script );
 	}
