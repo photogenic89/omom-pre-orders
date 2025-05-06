@@ -38,7 +38,6 @@ class Hooks extends Singleton
         // validation & update list
         add_action( 'woocommerce_store_api_cart_errors',                  [ $this, 'checkPreOrderStoreApiCartItems' ], 10, 2 );
         add_action( 'woocommerce_check_cart_items',                       [ $this, 'checkPreOrderCartItems' ], 10, 1 );
-        // add_action( 'woocommerce_after_checkout_validation',              [ $this, 'checkCartItemsOnOrderCreation' ], 10, 2 ); // on order creation
         add_filter( 'woocommerce_cart_item_required_stock_is_not_enough', [ $this, 'cartRequiredStockIsNotEnough' ], 10, 3 );
     }
 
@@ -297,11 +296,17 @@ class Hooks extends Singleton
         $quantity  = $cart_item['quantity'];
         $id        = $product->get_id();
 
-        if (! $managed || ($stock >= $quantity || 'yes' === get_post_meta( $id, '_backorders', true ) )) return $enough;
+        if (
+            ! $managed || 
+            ($stock >= $quantity || 'yes' === get_post_meta( $id, '_backorders', true ) )
+        ) return $enough;
  
         $bom_items = BoM::getLinkedBoMParts( $id );
 
-        if (! empty($bom_items) || (new Product( $id ))->getPreOrderStock()) return false;
+        if (
+            ! empty($bom_items) || 
+            (new Product( $id ))->getPreOrderStock()
+        ) return false;
         
         return $enough;
     }

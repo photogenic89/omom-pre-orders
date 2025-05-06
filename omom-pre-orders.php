@@ -124,7 +124,7 @@ class OmomPreOrders
 	 */
 	public function initializePlugin(): void
 	{
-		if ( version_compare( wc()->version, '8.7.0', '<' ) ) return;
+		if ( version_compare( wc()->version, '8.3.9', '<' ) ) return;
 
 		// Admin includes.
 		if (is_admin()) Omom\PreOrders\Admin\Bootstrap::getInstance();

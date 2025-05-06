@@ -355,7 +355,6 @@ class ShipmentHandler
 
         ! $is_published ? $this->setStatus( "draft" ) : $this->deleteStatus();
         
-
         /***********************************
          *  Save meta
          ***********************************/ 
@@ -431,7 +430,7 @@ class ShipmentHandler
          *  Add shipment to stock
          ***********************************/ 
         if (isset( $new_values['rs_release_po_stock'] )) {
-            $this->release( 'Added to stock' );
+            $this->release();
         }
     }
 
@@ -599,8 +598,11 @@ class ShipmentHandler
         // Log changes
         if ([] === $log_data) return;
 
-        $log = new Log;
-        $log->logStockChange( $post_id, $log_data, $note ?: 'Updated this shipment' );
+        (new Log)->logStockChange( 
+            $post_id, 
+            $log_data, 
+            $note ?: 'Updated this shipment' 
+        );
     }
 
     /**
@@ -646,8 +648,6 @@ class ShipmentHandler
     {
         $post_id  = $this->post_id;
         $products = ($this->getIsDraft() || $this->isStatus( 'draft' )) ? [] : $this->getProducts();
-
-        e_p("products", $products);
         
         foreach ($products as $product) {
 
@@ -690,12 +690,12 @@ class ShipmentHandler
     }
 
     /**
-     * Release the stock of one shipment
+     * Release the pre-order quantities of 
+     * all products in one shipment to stock
      * 
-     * @param int $post_id
      * @param string $log_title
      */
-    public function release( $log_title = "Released stock" ): void
+    public function release( $log_title = "Released to stock" ): void
     {
         $post_id  = $this->post_id;
         $log_data = [];
@@ -727,12 +727,12 @@ class ShipmentHandler
             $handler->updatePreOrderStock( $old_pre_order - $po_stock );
 
             // Add pre-order stock to product stock
-            wc_update_product_stock( $id, $po_stock, 'increase' );
+            wc_update_product_stock( $id, $product['Original'], 'increase' );
             if (0 < $handler->getStock()) wc_update_product_stock_status( $id, 'instock');
             wc_delete_product_transients( $id );
             
             // log
-            $log_data[$id] = [
+            $log_data[ $id ] = [
                 'post_old'  => $po_stock,
                 'post_new'  => 0,
             ];

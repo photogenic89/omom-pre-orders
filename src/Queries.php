@@ -229,6 +229,23 @@ class Queries
                     'terms'    => $product_id,
                 ],
             ],
+            'meta_query'    => [
+                [       
+                    'relation' => 'OR',         
+                    [
+                        // all the not yet released shipments
+                        'key'     => 'omom_shipment_status',
+                        'value'   => 'released',
+                        'compare' => '!=',
+                        'type'    => 'string'
+                    ],
+                    [
+                        // or which do not have the status meta
+                        'key'     => 'omom_shipment_status',
+                        'compare' => 'NOT EXISTS',
+                    ]  
+                ]  
+            ],
         ]);
 
         $id = 0;

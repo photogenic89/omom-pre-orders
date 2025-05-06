@@ -68,7 +68,7 @@ class Cron
     {
         switch (current_filter()) {
             case 'omnium_cron_restock_arrives':
-                (new ShipmentHandler( $post_id ))->release( 'Automatically added to stock' );
+                (new ShipmentHandler( $post_id ))->release( 'Automatically released to stock' );
                 break;
             case 'omom_cron_check_errors':
                 new FixErrors();

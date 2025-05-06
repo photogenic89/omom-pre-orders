@@ -39,8 +39,8 @@ class StoreApi
         $handler = new ProductHandler( $product->get_id() );
 
         return [
-            'po_stock'        => 1 * $handler->getPreOrderStock( false ),
-            'closest_po_date' => 1 * ((int) $handler->getClosestArrival( false, false )), // a unix timestamp, for when the product is available 
+            'preOrderStock'       => 1 * $handler->getPreOrderStock( false ),
+            'closestPreOrderDate' => 1 * ((int) $handler->getClosestArrival( false, false )), // a unix timestamp, for when the product is available 
         ];
     }
 
@@ -53,12 +53,12 @@ class StoreApi
     public static function schemaCallback(): array 
     {
         return [
-            'po_stock' => [
+            'preOrderStock' => [
                 'description' => __('the pre-order stock quantity', OMOM_PREORDERS()->text_domain ),
                 'type'        => 'integer',
                 'readonly'    => TRUE,
             ],
-            'closest_po_date' => [
+            'closestPreOrderDate' => [
                 'description' => __('the closest date to pre-order', OMOM_PREORDERS()->text_domain ),
                 'type'        => 'integer',
                 'readonly'    => TRUE,
