@@ -43,7 +43,7 @@ class Settings extends Page
 
 		wp_enqueue_style( 
 			'preorder_admin_styles', 
-			OMOM_PREORDERS()->pluginUrl() . '/assets/css/omom-admin.css', 
+			OMOM_PREORDERS()->pluginUrl() . '/assets/css/dist/omom-admin.css', 
 			[], 
 			self::$script_version 
 		);
