@@ -201,10 +201,13 @@ class Hooks extends Singleton
         foreach (WC()->cart->get_cart() as $cart_item) {
 
             $product = $cart_item['data'];
-
-            if (! $product->managing_stock()) continue;
-
             $id      = $cart_item['variation_id'] ?: $cart_item['product_id'];
+
+            if (
+                ! $product->managing_stock() || 
+                'yes' === get_post_meta( $id, '_backorders', true )
+            ) continue;
+
             $handler = new Product( $id );
             $stock   = $handler->getTotalStock();
 
