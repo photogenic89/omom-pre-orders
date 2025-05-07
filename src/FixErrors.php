@@ -38,6 +38,7 @@ class FixErrors
         foreach ($shipments as $shipment_id => $shipment) {
 
             $to_add = $to_remove = [];
+
             $terms    = Terms::getProductsInShipment( $shipment_id );
             $released = ! $shipment->isActive();
             
@@ -57,20 +58,20 @@ class FixErrors
                 if (false !== $key) $to_remove[] = $key;
 
                 // remove from all
-                unset( $term_objects[$id][$shipment_id] );
+                unset( $term_objects[ $id ][ $shipment_id ] );
 
                 // release - when all items are not available anymore
                 if ($av && $released) $released = false;
 
                 // collect po_stock
-                if (isset( $active_products[$id] )) {
-                    $active_products[$id]['qty'] += $qty;
-                    $active_products[$id]['av'] += $av;
+                if (isset( $active_products[ $id ] )) {
+                    $active_products[ $id ]['qty'] += $qty;
+                    $active_products[ $id ]['av'] += $av;
                     continue;
                 }
 
-                $active_products[$id]['qty'] = $qty;
-                $active_products[$id]['av'] = $av;
+                $active_products[ $id ]['qty'] = $qty;
+                $active_products[ $id ]['av'] = $av;
             }
 
             // if need to add
@@ -136,6 +137,7 @@ class FixErrors
      * Update all active products with the correct new stock &
      * remove all meta of all inactive products
      * 
+     * @todo work on the logic for email notifications
      * @todo change email
      * 
      * @param array $active_products
@@ -150,11 +152,14 @@ class FixErrors
             $handler   = new ProductHandler( $product_id );
             $stock     = $handler->getStock();
             $po_stock  = $stock < 0 ? $original + $stock : $available; // remove what is already purchased, if stock has been taken
-            $recipient = get_option( 'woocommerce_stock_email_recipient' ); // should this be somewhere else or better documented?
+            $recipient = false; // get_option( 'woocommerce_stock_email_recipient' ); // should this be somewhere else or better documented?
 
             // if it does not match available stock in shipments, take the calculated value there
-            if ($po_stock > 0 && $available !== $po_stock && false !== $recipient) {
-
+            if (
+                false !== $recipient && 
+                $po_stock > 0 && 
+                $available !== $po_stock
+            ) {
                 $product = wc_get_product( $product_id );
                 $sku = $product ? $product->get_sku() : "";
 
@@ -174,14 +179,14 @@ class FixErrors
             }
 
             // remove empty
-            if (0 >= $po_stock) {
+            if (0 >= $available) {
                 $handler->deleteMeta();
                 continue;
             }
 
             // blanket update
             $next = $handler->updateNextShipmentID();
-            if (0 !== $next) $handler->updatePreOrderStock( $po_stock );
+            if (0 !== $next) $handler->updatePreOrderStock( $available );
         }
 
         $all_po_products      = Queries::getAllProductIdsWithPOStock();

@@ -17,14 +17,16 @@ class Settings
 	 */
 	public function getSettings(): void
 	{
-		$settings = [
-			[
+		$settings = [];
+
+		/*
+		$settings[] = [
 				"type"      => "checkbox",
 				"id" 		=> "omom_pre_order_only_dates",
 				"isChecked" => "true" === get_option( 'omom_pre_order_only_dates' ),
 				"label"     => "Show only pre-order dates and don't use for stock validation. (saves on click)"
-			]
 		];
+		*/
 
 		// Check if WooCommerce's logging feature is enabled.
 		if (class_exists( '\Automattic\WooCommerce\Utilities\LoggingUtil' ) && LoggingUtil::logging_is_enabled()) {

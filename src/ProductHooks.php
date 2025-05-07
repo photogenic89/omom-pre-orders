@@ -107,7 +107,6 @@ class ProductHooks extends Singleton
     /**
      * Check if product has metadata and stock
      * 
-     * @since  0.0.1
      * @param  bool   $is_in_stock
      * @param  object $product
      * 
