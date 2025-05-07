@@ -277,7 +277,7 @@ class Post extends Page
 
             foreach ($data as $product_id => $stock) {
                 $product = wc_get_product( $product_id );
-                $name    = ! $product ? "" : $product->get_name();
+                $name    = ! $product ? "Deleted product" : $product->get_formatted_name();
                 
                 ?>
                 <tr>
