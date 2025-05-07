@@ -202,14 +202,14 @@ class Hooks extends Singleton
 
             $product = $cart_item['data'];
             $id      = $cart_item['variation_id'] ?: $cart_item['product_id'];
+            $handler = new Product( $id );
 
             if (
                 ! $product->managing_stock() || 
-                'yes' === get_post_meta( $id, '_backorders', true )
+                $handler->isOnBackorder()
             ) continue;
 
-            $handler = new Product( $id );
-            $stock   = $handler->getTotalStock();
+            $stock = $handler->getTotalStock();
 
             if ($stock <= 0) {
 

@@ -138,23 +138,32 @@ class ProductHandler
     }
 
     /**
+     * Is the product on backorder?
+     * The plugin overwrites the backorder hook,
+     * so we need to actually check this meta
+     * 
+     * @return bool
+     */
+    public function isOnBackorder(): bool
+    {
+        return ('onbackorder' === get_post_meta( $this->product_id, '_stock_status', true ) || 'yes' === get_post_meta( $this->product_id, '_backorders', true ));
+    }
+
+    /**
      * Check if product has stock
      * 
-     * @return int
+     * @return bool
      */
-    public function hasStock(): int 
+    public function hasStock(): bool 
     {
-        $id = $this->product_id;
+        if ($this->isOnBackorder()) return true;
 
-        if ('onbackorder' === get_post_meta( $id, '_stock_status', true ) || 'yes' === get_post_meta( $id, '_backorders', true )) return true;
-
-        $bom_items = BoM::getLinkedBoMParts( $id );
-        $stock     = get_post_meta( $id, '_stock', true );
+        $bom_items = BoM::getLinkedBoMParts( $this->product_id );
 
         // what about negative stock?
-        if (empty( $bom_items )) return (! empty( $stock ) &&  $stock > 0) ? true : false;
+        if (! empty( $bom_items )) return BoM::boMExceedsMinimum( $bom_items ); 
             
-        return BoM::boMExceedsMinimum( $bom_items ); 
+        return 0 !== $this->getStock( true );
     }
 
     /**
