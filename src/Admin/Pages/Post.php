@@ -213,8 +213,8 @@ class Post extends Page
 
             if ($product) continue;
 
-            $$po_stock = $product['Restock'] ?? '';
-            $string = $id . " and a pre-order stock of " . $$po_stock;
+            $po_stock = $product['Restock'] ?? '';
+            $string = $id . " and a pre-order stock of " . $po_stock;
 
             if (false === stripos( $comment, $string )) continue;
             
