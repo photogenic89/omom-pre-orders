@@ -220,7 +220,7 @@ class Queries
             'meta_key'       => 'rs_arrival',
             'order'          => 'ASC',
             'post_status'    => 'publish',
-            'posts_per_page' => 10,
+            'posts_per_page' => -1,
             'fields'         => 'ids',
             'tax_query'      => [
                 [
