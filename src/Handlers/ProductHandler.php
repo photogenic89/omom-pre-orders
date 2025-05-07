@@ -92,7 +92,7 @@ class ProductHandler
      */
     public function updatePreOrderStock( int $new_po_stock ): void
     {
-        $new_po_stock > 0 ? update_post_meta( $this->product_id, '_omom_po_stock', $new_po_stock ) : $this->deleteMeta();
+        $new_po_stock >= 0 ? update_post_meta( $this->product_id, '_omom_po_stock', $new_po_stock ) : $this->deleteMeta();
     }
 
     /**
@@ -320,7 +320,7 @@ class ProductHandler
     /**
      * Delete all preOrders data from a product
      */
-    public function deleteMeta()
+    public function deleteMeta(): void
     {
         $this->deleteNextShipmentID();
         $this->deletePreOrderStock();

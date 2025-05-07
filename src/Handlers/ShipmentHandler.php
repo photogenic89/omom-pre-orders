@@ -118,6 +118,7 @@ class ShipmentHandler
      * @param array $new_products
      * @param bool $is_published - if new post status is publish
      * @param bool $draft_to_publish - was the Shipment in draft status before this update?
+     * @param string $note
      */
     public function updateProducts( 
         array $new_products,
@@ -126,8 +127,146 @@ class ShipmentHandler
         string $note = "" 
     ): void {
 
-        $this->updateStockChanges( $new_products, $is_published, $was_draft, $note );
-        
+        // when the status of the shipment has changed
+        $draft_to_publish   = $was_draft && $is_published;
+        $draft_to_draft     = $was_draft && ! $is_published;
+        $publish_to_publish = ! $was_draft && $is_published;
+        $publish_to_draft   = ! $was_draft && ! $is_published;
+
+        $post_id      = $this->post_id;
+        $old_products = $this->getProducts();
+        $post_terms   = Terms::getProductsInShipment( $post_id );
+        $new_ids      = array_column( $new_products, 'ID' );
+        $old_ids      = array_column( $old_products, 'ID' ); 
+        $log_data     = [];
+
+        /*------------------------------*/
+        /*  Remove: Old Products        */
+        /*------------------------------*/
+
+        foreach ($old_products as $old_product) {
+            $old_id = (int) $old_product['ID'];
+
+            // don't remove if is still in post update
+            if (in_array( $old_id, $new_ids )) continue;
+
+            $handler   = new ProductHandler( $old_id );
+            $old_stock = $old_product['Restock'];
+
+            if (! $was_draft) 
+                $handler->updatePreOrderStock( $handler->getPreOrderStock() - $old_stock );
+
+            // Log data -> removed product
+            $log_data[$old_id] = [
+                'post_old'  => $old_stock,
+                'post_new'  => 0,
+            ];
+        }
+
+        /*------------------------------*/
+        /*  Add or Update: New Products */
+        /*------------------------------*/
+
+        foreach ($new_products as $new_product) {
+
+            // ignore empty entries
+            if (empty( $new_product['ID'] )) continue;
+            
+            $new_id         = (int) $new_product['ID'];
+            $new_stock      = (int) $new_product['Restock'];
+            $handler        = new ProductHandler( $new_id );
+            $original_stock = $handler->getPreOrderStock();  
+            $updated_stock  = $new_stock + $original_stock;
+
+            // Add post terms
+            if (
+                (! in_array( $new_id, $post_terms ) || $draft_to_publish) && 
+                $updated_stock > 0 &&
+                ! $publish_to_draft &&
+                ! $draft_to_draft
+            ) {
+                Terms::add( $post_id, $new_id );
+            }
+
+            // remove term if stock is empty
+            if (
+                $publish_to_draft ||
+                (0 === $new_stock && in_array( $new_id, $post_terms ))
+            ) Terms::remove( $post_id, $new_id ); 
+
+            // Add - if product did not exist before
+            if (
+                wc_get_product( $new_id ) &&
+                (! in_array( $new_id, $old_ids ) || $draft_to_publish)
+            ) {
+                if (
+                    $updated_stock > 0 && 
+                    ! $publish_to_draft && 
+                    ! $draft_to_draft
+                ) $handler->updatePreOrderStock( $updated_stock );
+                
+                // Log data -> newly added product
+                $log_data[$new_id] = [
+                    'post_old'  => 0,
+                    'post_new'  => $new_stock,
+                ];
+
+                continue;
+            }
+
+            // Update - if product existed before
+            foreach ($old_products as $old_product) {
+
+                $old_id    = (int) $old_product['ID'];
+                $old_stock = (int) $old_product['Restock'];
+            
+                if (
+                    $new_id !== $old_id || 
+                    ($old_stock === $new_stock && ($draft_to_draft || $publish_to_publish))
+                ) continue;
+
+                // Log data -> updated product
+                $log_data[$new_id] = [
+                    'post_old'  => $old_stock,
+                    'post_new'  => $new_stock,
+                ];
+
+                if ($draft_to_draft) break;
+
+                switch (true) {
+                    case $publish_to_draft:
+                        $updated_stock = $original_stock - $old_stock;
+                        break;
+                    case $draft_to_publish:
+                        $updated_stock = $original_stock + $new_stock;
+                        break;
+                    case $new_stock > $old_stock:
+                        $updated_stock = $original_stock + $new_stock - $old_stock;
+                        break;
+                    default:
+                        $updated_stock = $original_stock - ( $old_stock - $new_stock );
+                }
+
+                $handler->updatePreOrderStock( $updated_stock );
+
+                break;
+            }           
+        }
+
+        // remove old terms from Pre-Order Products taxonomy
+        foreach ($post_terms as $post_term)
+            if (! in_array( $post_term, $new_ids ))
+                Terms::remove( $post_id, $post_term );
+
+        // Log changes
+        if ([] === $log_data) return;
+
+        (new Log)->logStockChange( 
+            $post_id, 
+            $log_data, 
+            $note ?: 'Updated this shipment' 
+        );
+
         // remove all old meta
         delete_post_meta( $this->post_id, 'rs_products' );
 
@@ -435,177 +574,6 @@ class ShipmentHandler
     }
 
     /**
-	 * The meta field _restock
-     * 
-     * There are three types of products: old, current and new
-     * 
-     * @param array  $new_content
-     * @param bool   $is_published - is published if true. or draft if false
-     * @param bool   $was_draft - change from draft to publish
-     * @param string $note
-	 */
-	private function updateStockChanges( 
-        array $new_content, 
-        bool $is_published = true, 
-        bool $was_draft = false, 
-        string $note = "" 
-    ): void {
-
-        // if was a draft and is publish now
-        $draft_to_publish = $was_draft && $is_published;
-        // if was not a draft and is publish now
-        $publish_to_publish = ! $was_draft && $is_published;
-        // if was a draft and is not publish now
-        $draft_to_draft = $was_draft && ! $is_published;
-        // if was not a draft and is not publish now
-        $publish_to_draft = ! $was_draft && ! $is_published;
-
-        $post_id     = $this->post_id;
-        $old_content = $this->getProducts();
-        $post_terms  = Terms::getProductsInShipment( $post_id );
-        $new_ids     = array_column( $new_content, 'ID' );
-        $old_ids     = array_column( $old_content, 'ID' ); 
-        $log_data    = [];
-
-		/*------------------------------*/
-		/*  Remove: Old Products        */
-		/*------------------------------*/
-
-        foreach ($old_content as $old_product) {
-            $old_id = (int) $old_product['ID'];
-
-            // don't remove if is still in post update
-            if (in_array( $old_id, $new_ids )) continue;
-
-            $handler   = new ProductHandler( $old_id );
-            $old_stock = $old_product['Original'];
-
-            if (! $was_draft) {
-                $original_stock = $handler->getPreOrderStock();
-                $original_stock = $original_stock ? $original_stock : 0;  
-                $updated_stock  = $original_stock - $old_stock;
-        
-                if ($updated_stock > 0) {
-                    $handler->updatePreOrderStock( $updated_stock );
-                    // change to next closest arrival date, if necessary?
-                } else {
-                    $handler->deleteMeta();
-                }
-            }
-
-            // Log data -> removed product
-            $log_data[$old_id] = [
-                'post_old'  => $old_stock,
-                'post_new'  => 0,
-            ];
-        }
-
-		/*------------------------------*/
-		/*  Add or Update: New Products */
-		/*------------------------------*/
-        
-        foreach ($new_content as $new_product) {
-
-            // ignore empty entries
-            if (empty( $new_product['ID'] )) continue;
-            
-            $new_id         = (int) $new_product['ID'];
-            $new_stock      = (int) $new_product['Original'];
-            $handler        = new ProductHandler( $new_id );
-            $original_stock = $handler->getPreOrderStock();  
-            $updated_stock  = $new_stock + $original_stock;
-
-            // Add post terms
-            if (
-                (! in_array( $new_id, $post_terms ) || $draft_to_publish) && 
-                $updated_stock > 0 &&
-                ! $publish_to_draft &&
-                ! $draft_to_draft
-            ) {
-                Terms::add( $post_id, $new_id );
-            }
-
-            // remove term if stock is empty
-            if (
-                $publish_to_draft ||
-                (0 === $new_stock && in_array( $new_id, $post_terms ))
-            ) Terms::remove( $post_id, $new_id ); 
-
-            // Add - if product did not exist before
-            if (
-                wc_get_product( $new_id ) &&
-                (! in_array( $new_id, $old_ids ) || $draft_to_publish)
-            ) {
-                if (
-                    $updated_stock > 0 && 
-                    ! $publish_to_draft && 
-                    ! $draft_to_draft
-                ) $handler->updatePreOrderStock( $updated_stock );
-                
-                // Log data -> newly added product
-                $log_data[$new_id] = [
-                    'post_old'  => 0,
-                    'post_new'  => $new_stock,
-                ];
-
-                continue;
-            }
-
-            // Update - if product existed before
-            foreach ($old_content as $old_product) {
-
-                $old_id    = (int) $old_product['ID'];
-                $old_stock = (int) $old_product['Original'];
-            
-                if (
-                    $new_id !== $old_id || 
-                    ($old_stock === $new_stock && ($draft_to_draft || $publish_to_publish))
-                ) continue;
-
-                // Log data -> updated product
-                $log_data[$new_id] = [
-                    'post_old'  => $old_stock,
-                    'post_new'  => $new_stock,
-                ];
-
-                if ($draft_to_draft) break;
-
-                switch (true) {
-                    case $publish_to_draft:
-                        $updated_stock = $original_stock - $old_stock;
-                        break;
-                    case $draft_to_publish:
-                        $updated_stock = $original_stock + $new_stock;
-                        break;
-                    case $new_stock > $old_stock:
-                        $updated_stock = $original_stock + $new_stock - $old_stock;
-                        break;
-                    default:
-                        $updated_stock = $original_stock - ( $old_stock - $new_stock );
-                }
-
-                $handler->updatePreOrderStock( $updated_stock );
-
-                break;
-            }           
-        }
-
-        // remove old terms from Pre-Order Products taxonomy
-        foreach ($post_terms as $post_term)
-            if (! in_array( $post_term, $new_ids ))
-                Terms::remove( $post_id, $post_term );
-
-        // Log changes
-        if ([] === $log_data) return;
-
-        (new Log)->logStockChange( 
-            $post_id, 
-            $log_data, 
-            $note ?: 'Updated this shipment' 
-        );
-    }
-
-    /**
      * Update Arrival Date for products if necessary
      * 
      * @param int $product_id
@@ -703,20 +671,21 @@ class ShipmentHandler
         foreach ($this->getProducts() as $product) {
 
             $po_stock = $product['Restock'];
+            $to_add   = $product['Original'];
             $id       = $product['ID'];
             $handler  = new ProductHandler( $id );
 
             // remove from query-taxonomy
             Terms::remove( $post_id, $id );
 
-            // nothing to add, if empty
-            if (0 >= $po_stock) continue;
+            // if oversold, remove from what to add
+            if (0 > $po_stock) $to_add += $po_stock;
 
             // Remove stock from pre-order post
             $this->updateProduct(
                 [
                     'ID'       => $id,
-                    'Original' => $product['Original'],
+                    'Original' => $to_add,
                     'Restock'  => 0
                 ], 
                 $product 
@@ -727,7 +696,7 @@ class ShipmentHandler
             $handler->updatePreOrderStock( $old_pre_order - $po_stock );
 
             // Add pre-order stock to product stock
-            wc_update_product_stock( $id, $product['Original'], 'increase' );
+            wc_update_product_stock( $id, $to_add, 'increase' );
             if (0 < $handler->getStock()) wc_update_product_stock_status( $id, 'instock');
             wc_delete_product_transients( $id );
             
