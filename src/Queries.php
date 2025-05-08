@@ -58,7 +58,7 @@ class Queries
 
         $shipments = get_posts([
             'posts_per_page' => -1, 
-            'post_type'      => 'restock'
+            'post_type'      => Init::$post_type
         ]);
             
         foreach ($shipments as $shipment) {
@@ -94,7 +94,7 @@ class Queries
     public static function getActiveShipments( int $product_id = 0, bool $ids_only = false, bool $filter = false ): array 
     {   
         $args = [
-            'post_type'      => 'restock',
+            'post_type'      => Init::$post_type,
             'orderby'        => 'meta_value_num',
             'meta_key'       => 'rs_arrival',
             'order'          => 'ASC',
@@ -121,7 +121,7 @@ class Queries
 
         if ($product_id) $args['tax_query'] = [
             [
-                'taxonomy' => 'restocked_products',
+                'taxonomy' => Init::$taxonomy,
                 'field'    => 'slug',
                 'terms'    => $product_id,
             ],
@@ -182,7 +182,7 @@ class Queries
         if (0 === $arrival) return "";
 
         $post = get_posts([
-            'post_type'      => 'restock',
+            'post_type'      => Init::$post_type,
             'posts_per_page' => 1,
             'post_status'    => 'publish',
             'fields'         => 'ids',
@@ -215,7 +215,7 @@ class Queries
     public static function getClosestShipmentId( int $product_id ): int 
     {
         $shipments = get_posts([
-            'post_type'      => 'restock',
+            'post_type'      => Init::$post_type,
             'orderby'        => 'meta_value_num',
             'meta_key'       => 'rs_arrival',
             'order'          => 'ASC',
@@ -224,7 +224,7 @@ class Queries
             'fields'         => 'ids',
             'tax_query'      => [
                 [
-                    'taxonomy' => 'restocked_products',
+                    'taxonomy' => Init::$taxonomy,
                     'field'    => 'slug',
                     'terms'    => $product_id,
                 ],

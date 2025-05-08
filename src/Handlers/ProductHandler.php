@@ -344,7 +344,6 @@ class ProductHandler
      */
     public function updatePOMeta(): bool
     {
-        $id   = $this->product_id;
 		$data = $this->getData();
 				
 		if ([] === $data) return false;

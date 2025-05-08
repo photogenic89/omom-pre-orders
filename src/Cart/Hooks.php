@@ -76,12 +76,17 @@ class Hooks extends Singleton
      * @param int    $cart_item_key
      * @param object $cart
      */
-    public function recalculatePreorderOnRemoveOrRestore( $cart_item_key, $cart ): void 
+    public function recalculatePreorderOnRemoveOrRestore( int $cart_item_key, $cart ): void 
     {
-        $removed_item = $cart->removed_cart_contents[ $cart_item_key ];
-        $product      = wc_get_product( $removed_item['variation_id'] ?: $removed_item['product_id'] );
+        $removed_item = $cart->removed_cart_contents[ $cart_item_key ] ?? false;
+
+        if (! $removed_item) return;
+
+        $product = wc_get_product( $removed_item['variation_id'] ?: $removed_item['product_id'] );
 
         // how to deal with composites?
+        // this leads to undefined array keys
+        /*
         if (
             is_a( $product, 'WC_Product' ) && 
             $product->is_type( 'composite' )
@@ -92,6 +97,7 @@ class Hooks extends Singleton
 
             return;
         }
+        */
 
         $po_list     = $removed_item['restock_list'] ?? false;
         $bom_po_list = $removed_item['bom_restock_list'] ?? [];

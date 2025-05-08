@@ -10,6 +10,20 @@ defined( 'ABSPATH' ) || exit;
 
 class Init 
 {
+    /** 
+     * Post type
+     * 
+     * @todo omom_shipment 
+     */
+    public static string $post_type = "restock";
+
+    /**
+     * Name of the taxonomy we use to find products
+     * 
+     * @todo omom_products_in_shipment 
+     */
+    public static string $taxonomy = 'restocked_products';
+
     /**
      * Load hooks
      */
@@ -86,7 +100,7 @@ class Init
             'capability_type'       => 'page',
         ];
         
-        register_post_type( 'restock', $args );
+        register_post_type( self::$post_type, $args );
         flush_rewrite_rules();
     }
 
@@ -104,11 +118,11 @@ class Init
             'show_in_nav_menus' => false,
             'show_admin_column' => false,
             'meta_box_cb'       => false,
-            'query_var'         => 'restocked_products',
+            'query_var'         => self::$taxonomy,
 
             // The rewrite handles the URL structure
             'rewrite' => [
-                'slug'         => 'restocked_products',
+                'slug'         => self::$taxonomy,
                 'with_front'   => false,
                 'hierarchical' => false,
                 'ep_mask'      => \EP_NONE
@@ -135,6 +149,6 @@ class Init
             ]
         ];
 
-        register_taxonomy( 'restocked_products', 'restock', $args );
+        register_taxonomy( self::$taxonomy, self::$post_type, $args );
     }
 }
