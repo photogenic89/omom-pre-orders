@@ -54,13 +54,13 @@ class FixErrors
                 $key = array_search( $id, $terms );
 
                 // add if yes, remove from array if no
-                if (false === $key && 0 !== $qty) $to_add[] = $id;
+                if (false === $key && 0 !== $av) $to_add[] = $id;
                 if (false !== $key) $to_remove[] = $key;
 
                 // remove from all
                 unset( $term_objects[ $id ][ $shipment_id ] );
 
-                // release - when all items are not available anymore
+                // release - when no items have available stock anymore
                 if ($av && $released) $released = false;
 
                 // collect po_stock
@@ -74,15 +74,15 @@ class FixErrors
                 $active_products[ $id ]['av'] = $av;
             }
 
-            // if need to add
-            if ([] !== $to_add && ! $released) 
+            if (! $released) {
+                // if need to add
                 foreach ($to_add as $to_add_id)
                     Terms::add( $shipment_id, $to_add_id );
 
-            // if need to remove
-            if ([] !== $to_remove && ! $released) 
+                // if need to remove
                 foreach ($to_remove as $remove_key)
                     unset( $terms[$remove_key] );
+            }
 
             // remove leftover terms
             foreach ($terms as $term)
