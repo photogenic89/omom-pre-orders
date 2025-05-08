@@ -73,10 +73,10 @@ class Hooks extends Singleton
     /**
      * Recalculate cart items when product is removed from or restored to cart
      * 
-     * @param int    $cart_item_key
+     * @param string $cart_item_key
      * @param object $cart
      */
-    public function recalculatePreorderOnRemoveOrRestore( int $cart_item_key, $cart ): void 
+    public function recalculatePreorderOnRemoveOrRestore( $cart_item_key, $cart ): void 
     {
         $removed_item = $cart->removed_cart_contents[ $cart_item_key ] ?? false;
 
