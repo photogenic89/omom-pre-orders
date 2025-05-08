@@ -60,24 +60,27 @@ class Queries
             'posts_per_page' => -1, 
             'post_type'      => Init::$post_type,
             'post_status'    => 'publish',
-            'tax_query'      =>             [
-                'taxonomy' => Init::$taxonomy,
-                'field'    => 'slug',
-                'terms'    => $product_id,
+            'fields'         => 'ids',
+            'tax_query'      => [
+                [                
+                    'taxonomy' => Init::$taxonomy,
+                    'field'    => 'slug',
+                    'terms'    => [ (string) $product_id ],
+                    'operator' => 'IN'
+                ]
             ],
         ]);
             
-        foreach ($shipments as $shipment) {
+        foreach ($shipments as $shipment_id) {
 
-            $id      = (int) $shipment->ID;
-            $handler = new Handlers\ShipmentHandler( $id );
+            $handler = new Handlers\ShipmentHandler( (int) $shipment_id );
             $product = $handler->getProduct( $product_id );
 
             // only if the shipment can't find inside
             if (false === $product) continue;
 
             $all_shipments[] = [
-                "id"        => $id,
+                "id"        => $shipment_id,
                 "original"  => (int) ($product['Original'] ?? 0),
                 "available" => (int) ($product['Restock'] ?? 0),
                 "arrival"   => $handler->getArrival()
