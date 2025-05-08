@@ -58,7 +58,13 @@ class Queries
 
         $shipments = get_posts([
             'posts_per_page' => -1, 
-            'post_type'      => Init::$post_type
+            'post_type'      => Init::$post_type,
+            'post_status'    => 'publish',
+            'tax_query'      =>             [
+                'taxonomy' => Init::$taxonomy,
+                'field'    => 'slug',
+                'terms'    => $product_id,
+            ],
         ]);
             
         foreach ($shipments as $shipment) {
