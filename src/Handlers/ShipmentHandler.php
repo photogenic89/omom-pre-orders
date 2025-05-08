@@ -408,7 +408,7 @@ class ShipmentHandler
      */
     public function getIsDraft(): bool
     {
-        return "yes" === get_post_meta( $this->post_id, 'rs_is_a_draft', true );
+        return "draft" === get_post_status( $this->post_id ) || "yes" === get_post_meta( $this->post_id, 'rs_is_a_draft', true );
     }
 
     /**
