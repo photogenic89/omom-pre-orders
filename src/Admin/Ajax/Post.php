@@ -31,8 +31,8 @@ class Post
             
             $_products[] = [
                 'id'                => $id,
-                'OriginalQty'       => $product['Original'] ?? 0,
-                'AvailableQty'      => $product['Restock'] ?? "",
+                'OriginalQty'       => (int) ($product['Original'] ?? 0),
+                'AvailableQty'      => (int) ($product['Restock'] ?? 0),
                 'onFutureStockPage' => $product['On_FS'] ?? "", // on_FS missing!
                 'name'              => $is_product->get_formatted_name() ?? $id,
                 "state"             => "old"
