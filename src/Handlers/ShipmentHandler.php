@@ -568,7 +568,7 @@ class ShipmentHandler
         /***********************************
          *  Add shipment to stock
          ***********************************/ 
-        if (isset( $new_values['rs_release_po_stock'] )) {
+        if (isset( $new_values['omom_release_shipment'] )) {
             $this->release();
         }
     }

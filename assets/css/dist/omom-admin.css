@@ -87,6 +87,10 @@
   width: 100%;
 }
 
+.omom-max-w-md {
+  max-width: 28rem;
+}
+
 @keyframes omom-spin {
   to {
     transform: rotate(360deg);
@@ -97,8 +101,16 @@
   animation: omom-spin 1s linear infinite;
 }
 
+.omom-list-disc {
+  list-style-type: disc;
+}
+
 .omom-grid-cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.omom-flex-row {
+  flex-direction: row;
 }
 
 .omom-flex-col {
@@ -151,9 +163,8 @@
   border-color: rgb(221 221 221 / var(--tw-border-opacity, 1));
 }
 
-.omom-bg-blue-500 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(59 130 246 / var(--tw-bg-opacity, 1));
+.omom-bg-transparent {
+  background-color: transparent;
 }
 
 .omom-bg-white {
@@ -173,8 +184,21 @@
   padding: 1rem;
 }
 
+.omom-px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
 .omom-pr-8 {
   padding-right: 2rem;
+}
+
+.omom-text-left {
+  text-align: left;
+}
+
+.omom-text-center {
+  text-align: center;
 }
 
 .omom-text-white {

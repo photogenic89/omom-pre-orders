@@ -62,11 +62,37 @@ if (false) :?>
 <div id="publishing-action">
     <span class="spinner"></span>
     <!-- Does not include create yet -->
-    <input 
+    <input
+        id="omom_release_button"
         class="button button-primary button-large" 
-        type="submit" 
-        name="rs_release_po_stock" 
+        type="button" 
         value="Release"
-    />				
+    />	
+    <dialog
+        id="omom_release_modal"
+    >
+        <h2 class="omom-text-center">YOU ARE ABOUT TO RELEASE THIS SHIPMENT</h2>
+        <p class="omom-text-center">This will have the following consequences:</p>
+        <ul class="omom-list-disc omom-max-w-md omom-text-left omom-mx-auto omom-px-4">
+            <li>The pre-order quantity of each product will<br> be added to the actual stock of that product.</li>
+            <li>The available quantity of each product will be set to 0.</li>
+            <li>The shipment status will be set to "Released".</li>
+        </ul>
+        <div class="omom-flex omom-flex-row omom-gap-2">
+            <input
+                type="submit" 
+                class="button button-primary button-large" 
+                name="omom_release_shipment"
+                type="button" 
+                value="Release" 
+            />
+            <input 
+                id="omom_abort_release"
+                class="button button-primary button-large" 
+                type="button"
+                value="Abort"
+            />
+        </div>
+    </dialog>			
 </div>
 <div class="clear"></div>
