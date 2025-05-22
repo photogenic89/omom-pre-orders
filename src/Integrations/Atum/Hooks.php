@@ -103,8 +103,7 @@ class Hooks extends Singleton
 
         $current_stock = (int) apply_filters( 'atum/list_table/column_stock_value', wc_stock_amount( $list_item->get_stock_quantity() ), $list_item ); // check  AtumListTable->column__stock
         $inbound_stock = $list_item->get_inbound_stock() + (new Product( (int) $item->ID ))->getPreOrderStock();
-        $stock_on_hold = (int) $list_item->get_stock_on_hold();
 
-        return $current_stock + $inbound_stock - $stock_on_hold;
+        return $current_stock + $inbound_stock;
     }
 }
