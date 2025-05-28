@@ -63,7 +63,7 @@ class Post
 		foreach ($ids as $id) {
 			$product_object = wc_get_product( $id );
 
-			if (! wc_products_array_filter_readable( $product_object )) continue;
+			if (! wc_products_array_filter_readable( $product_object ) || $product_object->is_type( 'variable' )) continue;
 
 			$formatted_name = $product_object->get_formatted_name();
 
