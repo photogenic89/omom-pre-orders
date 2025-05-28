@@ -56,7 +56,7 @@ class Post
 
 		// incorporated parts from WC_AJAX::json_search_products	
 		$data_store = \WC_Data_Store::load( 'product' );
-		$ids        = $data_store->search_products( $term, '', false, false, 10, [], [] );
+		$ids        = $data_store->search_products( $term, '', true, false, 10, [], [] );
 
 		$products = [];
         
