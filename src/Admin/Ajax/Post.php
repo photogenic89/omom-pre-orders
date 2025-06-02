@@ -12,6 +12,10 @@ class Post
 {
     /**
      * Get all products to display on 
+     * 
+     * @todo remove On_FS
+     * 
+     * @param array $data
      */
     public function getProducts( $data ): void
     {	
@@ -30,12 +34,12 @@ class Post
             if (! $is_product) continue;
             
             $_products[] = [
-                'id'                => $id,
-                'OriginalQty'       => (int) ($product['Original'] ?? 0),
-                'AvailableQty'      => (int) ($product['Restock'] ?? 0),
-                'onFutureStockPage' => $product['On_FS'] ?? "", // on_FS missing!
-                'name'              => $is_product->get_formatted_name() ?? $id,
-                "state"             => "old"
+                'id'           => $id,
+                'OriginalQty'  => (int) ($product['Original'] ?? 0),
+                'AvailableQty' => (int) ($product['Restock'] ?? 0),
+                'shortcode'    => $product['shortcode'] ?? $product['On_FS'] ?? "",
+                'name'         => $is_product->get_formatted_name() ?? $id,
+                "state"        => "old"
             ];
         }
 

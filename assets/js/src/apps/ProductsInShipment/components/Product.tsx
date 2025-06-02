@@ -13,7 +13,7 @@ interface Props {
 export default function Product({index, product, allProducts, onAddProduct, onChangeCurrent, onRemoveCurrent}: Props)
 {
     const [data, setData] = useState(product);
-    const [onFS, setOnFS] = useState(product.onFutureStockPage);
+    const [shortcode, setShortcode] = useState(product.shortcode);
     const [qty, setQty]   = useState(product.OriginalQty);
     const [aQty, setAQty] = useState(+product.AvailableQty);
 
@@ -32,12 +32,12 @@ export default function Product({index, product, allProducts, onAddProduct, onCh
             name: title,
             AvailableQty: aQty,
             OriginalQty: qty,
-            onFutureStockPage: onFS,
+            shortcode: shortcode,
             state: "new"
         });
         setAQty(0);
         setQty(0);
-        setOnFS(false);
+        setShortcode(false);
     }
 
     const onChangeQty = (newQty: number) => 
@@ -59,13 +59,13 @@ export default function Product({index, product, allProducts, onAddProduct, onCh
                 #{index + 1}
             </td> 
 
-            <td className="on_fs_page">
+            <td className="shortcode-table-cell">
                 <input 
-                    className="on_fs_input" 
+                    className="shortcode-input" 
                     type="checkbox" 
-                    name={"rs_products[" + index + "][On_FS]"} 
-                    checked={onFS}
-                    onClick={e => setOnFS(! onFS)}
+                    name={"rs_products[" + index + "][shortcode]"} 
+                    checked={shortcode}
+                    onClick={e => setShortcode(! shortcode)}
                 />
             </td>
 

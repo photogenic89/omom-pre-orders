@@ -74,7 +74,7 @@ export default function ProductsInShipment()
                         <thead>
                             <tr>
                                 <th className="product_nr">Nr.</th>
-                                <th className="on_fs_page">F.S.</th>
+                                <th className="shortcode-table-header-cell">SC</th>
                                 <th className="search">Product</th>
                                 <th className="quantity">Pre-order quantity</th>
                                 <th className="restock">Available quantity</th>
@@ -100,7 +100,7 @@ export default function ProductsInShipment()
                                         id: "",
                                         OriginalQty: 0,
                                         AvailableQty: 0,
-                                        onFutureStockPage: false,
+                                        shortcode: false,
                                         name: "",
                                         state: "new"
                                     }}

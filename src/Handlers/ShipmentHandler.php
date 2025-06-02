@@ -258,15 +258,6 @@ class ShipmentHandler
             if (! in_array( $post_term, $new_ids ))
                 Terms::remove( $post_id, $post_term );
 
-        // Log changes
-        if ([] === $log_data) return;
-
-        (new Log)->logStockChange( 
-            $post_id, 
-            $log_data, 
-            $note ?: 'Updated this shipment' 
-        );
-
         // remove all old meta
         delete_post_meta( $this->post_id, 'rs_products' );
 
@@ -279,6 +270,15 @@ class ShipmentHandler
             // needs to be executed after updateStockChanges
             if ($is_published || (! $is_published && ! $was_draft)) $this->maybeUpdateProductArrival( $new_product['ID'] );
         }
+
+        // Log changes
+        if ([] === $log_data) return;
+
+        (new Log)->logStockChange( 
+            $post_id, 
+            $log_data, 
+            $note ?: 'Updated this shipment' 
+        );
     }
 
     /**

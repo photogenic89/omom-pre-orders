@@ -6,7 +6,6 @@
 namespace Omom\PreOrders;
 
 use Omom\PreOrders\Abstracts\Singleton;
-use Omom\PreOrders\Handlers\ShipmentHandler;
 
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
@@ -27,13 +26,17 @@ class Shortcode extends Singleton
      * 
      * @return string - html
      */
-    public function getCallback( $atts ): string 
+    public function getCallback( $atts, $content, $tag ): string 
     {
-        if (is_admin()) return "";
-
-        ob_start();
+        if (
+            is_admin() ||
+            (current_user_can( 'edit_posts' ) && 
+            ( defined( 'DOING_AJAX' ) || defined( 'REST_REQUEST' ) ))
+        ) return "";
 
         $shipments = $this->generateList();
+
+        ob_start();
 
         foreach ($shipments as $container_id => $shipment) {
         ?>
@@ -123,10 +126,10 @@ class Shortcode extends Singleton
     public function generateList(): array
     {
         $data = [];
-        $blog = is_main_site() ? 2 : 1; // get info from ws site   
+        $blog = is_multisite() ? (is_main_site() ? 2 : 1) : 1; // get info from ws site   
         $i    = 0;
     
-        if (2 === $blog) switch_to_blog( $blog );
+        if (2 === $blog) \switch_to_blog( $blog );
 
         foreach (Queries::getActiveShipments( 0, false, true ) as $shipment) {
             
@@ -142,7 +145,7 @@ class Shortcode extends Singleton
 
         ksort( $data );
 
-        if (2 === $blog) restore_current_blog();
+        if (2 === $blog) \restore_current_blog();
 
         return $data;
     }
@@ -160,7 +163,7 @@ class Shortcode extends Singleton
 
         foreach ($list_items as $list_item) {
 
-            if ('on' !== ($list_item['On_FS'] ?? 'off')) continue;
+            if ('on' !== ($list_item['shortcode'] ?? 'off')) continue;
             
             $product_id = $list_item['ID'];
             $product    = wc_get_product( $product_id );
