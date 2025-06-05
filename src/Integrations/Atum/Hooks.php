@@ -93,6 +93,12 @@ class Hooks extends Singleton
      * 
      * @todo: bundles
      * @todo: items with inventory
+     * 
+     * @param string                 $value
+	 * @param \WC_Product| Inventory $item
+	 * @param AtumListTable          $list_table
+     * 
+	 * @return string
      */
     public function calculateAvailableToPurchase( $available_stock, $item, $list_table )
     {
@@ -101,8 +107,9 @@ class Hooks extends Singleton
 
         if (! $list_item->get_manage_stock()) return $available_stock;
 
+        $id = (int) (is_a( $item, '\WC_Product') ? $item->get_id() : $item->ID);
         $current_stock = (int) apply_filters( 'atum/list_table/column_stock_value', wc_stock_amount( $list_item->get_stock_quantity() ), $list_item ); // check  AtumListTable->column__stock
-        $inbound_stock = $list_item->get_inbound_stock() + (new Product( (int) $item->ID ))->getPreOrderStock();
+        $inbound_stock = $list_item->get_inbound_stock() + (new Product( $id ))->getPreOrderStock();
 
         return $current_stock + $inbound_stock;
     }
