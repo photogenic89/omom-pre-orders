@@ -40,7 +40,7 @@ class Helpers
      * @param int $product_id 
      * @param bool  $combine
      * 
-     * @return mixed false if no bom, int if combine is true, array if combine is false
+     * @return false|int|array false if no bom, int if combine is true, array if combine is false
      */
     public static function findMaxValue( int $product_id, bool $combine = true ): mixed 
     {
@@ -52,21 +52,19 @@ class Helpers
             'stock'    => 0, 
             'po_stock' => 0 
         ];
-        
+
         $max_value = $i = 0;
 
         foreach ($bom_items as $part) {
 
             $bom_id = $part->bom_id;
 
-            // $is_bom_product = ProductLevels::is_bom_product( $product );
             if (! wc_get_product( $bom_id )) continue;
 
             $po_product = new Product( $bom_id );
-            $stock = $po_product->getStock();
 
             $bom_value = [
-                'stock'    => $stock < 0 ? 0 : $stock,
+                'stock'    => $po_product->getStock( true ),
                 'po_stock' => $po_product->getPreOrderStock(),
             ];
 
@@ -75,7 +73,7 @@ class Helpers
             // One value - Int
             if ($combine) {
                 $value     = intval( $bom_value['stock'] / $divider ) + intval( $bom_value['po_stock'] / $divider );
-                $max_value = ( $i === 0 || $value < $max_value ) ? $value : $max_value;
+                $max_value = ($i === 0 || $value < $max_value) ? $value : $max_value;
 
                 $i++;
 
@@ -83,13 +81,32 @@ class Helpers
             }
 
             // Separate values - Array
-            foreach ($max_values as $type => $max_value) {
-                $value = intval( $bom_value[$type] / $divider );
-                $max_values[$type] = ( $i === 0 || $value < $max_value ) ? $value : $max_value;
+            foreach ($max_values as $type => $current_max) {
+                
+                switch ($type) {
+                    case 'stock':
+                        $value = intval( $bom_value['stock'] / $divider );
+                        break;
+
+                    case 'po_stock':
+                        // Only count PO stock above what is covered by regular stock
+                        $remaining_po = max( $bom_value['po_stock'] + $bom_value['stock'], 0 );
+                        $value        = intval( $remaining_po / $divider );
+                        break;
+                }
+
+
+                $max_values[ $type ] = ($i === 0 || $value < $current_max) ? $value : $current_max;
             }
 
             $i++;
         }
+
+        // If no BOM items processed, return false
+        if ($i === 0) return false;
+
+        // after combining both values, remove what in-stock stock is purchasable 
+        $max_values['po_stock'] = max( 0, $max_values['po_stock'] - $max_values['stock'] );
 
         return $combine ? $max_value : $max_values;
     }
