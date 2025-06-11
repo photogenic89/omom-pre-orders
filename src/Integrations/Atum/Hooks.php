@@ -9,7 +9,8 @@ namespace Omom\PreOrders\Integrations\Atum;
 defined( 'ABSPATH' ) || die;
 
 use Omom\PreOrders\Abstracts\Singleton;
-use Omom\PreOrders\Handlers\ProductHandler as Product;
+use Omom\PreOrders\Queries;
+use Omom\PreOrders\Handlers\ShipmentHandler;
 
 class Hooks extends Singleton 
 {
@@ -70,7 +71,7 @@ class Hooks extends Singleton
     }
 
     /**
-     * Adds pre-order stock on top of what is in Atum purchase orders
+     * Adds what is in shipments on top of what is in Atum purchase orders
      * 
      * @param string|int $inbound_stock
 	 * @param \WP_Post $item The WooCommerce product post to use in calculations.
@@ -79,7 +80,17 @@ class Hooks extends Singleton
      */
     public function addPreOrderStockToInboundStock( mixed $inbound_stock, mixed $item ): mixed
     {
-        $id = (int) (is_a( $item, '\WC_Product') ? $item->get_id() : $item->ID);
-        return "integer" !== gettype( $inbound_stock ) ? $inbound_stock : $inbound_stock + (new Product( $id ))->getPreOrderStock();
+        if ("integer" !== gettype( $inbound_stock )) return $inbound_stock;
+
+        $id        = (int) (is_a( $item, '\WC_Product') ? $item->get_id() : $item->ID);
+        $shipments = Queries::getActiveShipments( $id, true );
+        $total_po  = 0;
+
+        foreach ($shipments as $shipment_id) {
+            $handler = new ShipmentHandler( $shipment_id );
+            $total_po += $handler->getProduct( $id, 'original' ) ?: 0;
+        }
+
+        return $inbound_stock + $total_po;
     }
 }
