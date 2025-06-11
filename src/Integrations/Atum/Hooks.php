@@ -9,7 +9,6 @@ namespace Omom\PreOrders\Integrations\Atum;
 defined( 'ABSPATH' ) || die;
 
 use Omom\PreOrders\Abstracts\Singleton;
-use Atum\Inc\Helpers as AtumHelpers;
 use Omom\PreOrders\Handlers\ProductHandler as Product;
 
 class Hooks extends Singleton 
@@ -19,12 +18,9 @@ class Hooks extends Singleton
      */
     function __construct()
     {
-        add_filter( 'atum/stock_central_list/table_columns',                       [$this, 'reorderStockCentralColumns'], 100, 1 );
-        add_filter( 'atum/product_levels/manufacturing_list_table/table_columns',  [$this, 'reorderStockCentralColumns'], 100, 1 );
-        add_filter( 'atum/list_table/column_stock',                                [$this, 'makeCurrentStockUnselectable'], 100, 1 );
-        add_filter( 'atum/product_levels/list_table/column_available_to_purchase', [$this, 'makeCurrentStockUnselectable'], 100, 1 );
-        add_filter( 'atum/list_table/column_inbound_stock',                        [$this, 'addPreOrderStockToInboundStock'], 100, 2 );
-        add_filter( 'atum/product_levels/get_available_to_purchase_column_value',  [$this, 'calculateAvailableToPurchase'], 100, 3 ); 
+        add_filter( 'atum/stock_central_list/table_columns', [$this, 'reorderStockCentralColumns'], 100, 1 );
+        add_filter( 'atum/list_table/column_stock',          [$this, 'makeCurrentStockUnselectable'], 100, 1 );
+        add_filter( 'atum/list_table/column_inbound_stock',  [$this, 'addPreOrderStockToInboundStock'], 100, 2 );
     }
 
     /**
@@ -83,34 +79,7 @@ class Hooks extends Singleton
      */
     public function addPreOrderStockToInboundStock( mixed $inbound_stock, mixed $item ): mixed
     {
-        return "integer" !== gettype( $inbound_stock ) ? $inbound_stock : $inbound_stock + (new Product( (int) $item->ID ))->getPreOrderStock();
-    }
-
-    /**
-     * Show a correct number in 
-     * Could calculate this in Javascript
-     * We ignore the initial value? But should we?
-     * 
-     * @todo: bundles
-     * @todo: items with inventory
-     * 
-     * @param string                 $value
-	 * @param \WC_Product| Inventory $item
-	 * @param AtumListTable          $list_table
-     * 
-	 * @return string
-     */
-    public function calculateAvailableToPurchase( $available_stock, $item, $list_table )
-    {
-        // current stock + inbound stock - stock on hold
-        $list_item = AtumHelpers::get_atum_product( $item );
-
-        if (! $list_item->get_manage_stock()) return $available_stock;
-
         $id = (int) (is_a( $item, '\WC_Product') ? $item->get_id() : $item->ID);
-        $current_stock = (int) apply_filters( 'atum/list_table/column_stock_value', wc_stock_amount( $list_item->get_stock_quantity() ), $list_item ); // check  AtumListTable->column__stock
-        $inbound_stock = $list_item->get_inbound_stock() + (new Product( $id ))->getPreOrderStock();
-
-        return $current_stock + $inbound_stock;
+        return "integer" !== gettype( $inbound_stock ) ? $inbound_stock : $inbound_stock + (new Product( $id ))->getPreOrderStock();
     }
 }
