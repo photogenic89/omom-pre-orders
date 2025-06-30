@@ -126,7 +126,7 @@ class ProductHooks extends Singleton
         // for later refactoring: maybe give variable product a boolean post_meta "child_has_po_stock", so we don't have to loop through all variations
         // this also might make the bundle sync method obsolete, since we only sync it because of the variations
         foreach ($variations as $var_id) {
-            if ((new Product( $var_id) )->hasPreOrderStock()) return true;
+            if (0 < (new Product( $var_id) )->getPreOrderStock( false )) return true;
         }
 
         return $is_in_stock;
