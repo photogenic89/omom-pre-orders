@@ -11,6 +11,8 @@
 
 defined( 'ABSPATH' ) || die;
 
+do_action( 'omom_pre_orders_shipment_action_metabox', $post_id );
+
 // hide delete action yet
 if (false) :?>
     <div id="delete-action">
