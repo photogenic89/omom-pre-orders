@@ -668,6 +668,8 @@ class ShipmentHandler
         $post_id  = $this->post_id;
         $log_data = [];
 
+        do_action( 'omom_pre_orders_on_shipment_release', $post_id );
+
         foreach ($this->getProducts() as $product) {
 
             $po_stock = $product['Restock'];
