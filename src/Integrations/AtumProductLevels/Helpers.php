@@ -72,7 +72,9 @@ class Helpers
 
             // One value - Int
             if ($combine) {
-                $value     = intval( $bom_value['stock'] / $divider ) + intval( $bom_value['po_stock'] / $divider );
+                $a         = empty( $bom_value['stock'] ) ? 0 : intval( $bom_value['stock'] / $divider );
+                $b         = empty( $bom_value['po_stock'] ) ? 0 : intval( $bom_value['po_stock'] / $divider );
+                $value     = $a + $b;
                 $max_value = ($i === 0 || $value < $max_value) ? $value : $max_value;
 
                 $i++;
