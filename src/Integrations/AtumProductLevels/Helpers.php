@@ -57,9 +57,10 @@ class Helpers
 
         foreach ($bom_items as $part) {
 
-            $bom_id = $part->bom_id;
+            $bom_id  = $part->bom_id;
+            $divider = $part->qty;
 
-            if (! wc_get_product( $bom_id )) continue;
+            if (! $divider || ! wc_get_product( $bom_id )) continue;
 
             $po_product = new Product( $bom_id );
 
@@ -67,8 +68,6 @@ class Helpers
                 'stock'    => $po_product->getStock( true ),
                 'po_stock' => $po_product->getPreOrderStock(),
             ];
-
-            $divider = $part->qty;
 
             // One value - Int
             if ($combine) {
