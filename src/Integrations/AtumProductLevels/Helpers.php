@@ -85,7 +85,7 @@ class Helpers
                 
                 switch ($type) {
                     case 'stock':
-                        $value = intval( $bom_value['stock'] / $divider );
+                        $value = empty( $bom_value['stock'] ) ? 0 : intval( $bom_value['stock'] / $divider );
                         break;
 
                     case 'po_stock':
